@@ -15,6 +15,8 @@ all: $(TARGET) $(OBJ)
 
 $(TARGET): $(TARGET).c $(OBJ)
 	$(CC) $(CFLAGS) -o $(TARGET) $(TARGET).c $(OBJ)
+	mv *.o obj/
+	mv $(TARGET) bin/$(TARGET)
 
 run: $(TARGET)
 	./$(TARGET) $(ARGS)
@@ -25,3 +27,5 @@ install: $(TARGET)
 
 clean:
 	$(RM) $(TARGET) $(OBJ)
+	$(RM) bin/$(TARGET)
+	cd obj && $(RM) $(OBJ)
