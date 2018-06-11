@@ -16,10 +16,10 @@ obj/%.o: src/%.c $(DEPS)
 bin/$(TARGET): src/$(TARGET).c $(OBJ)
 	$(CC) $(CFLAGS) -o bin/$(TARGET) src/$(TARGET).c $(OBJ)
 
-run: $(TARGET)
+run: bin/$(TARGET)
 	./bin/$(TARGET) $(ARGS)
 
-install: $(TARGET)
+install: bin/$(TARGET)
 	mkdir -p $(PREFIX)/bin
 	cp bin/$^ $(PREFIX)/bin
 

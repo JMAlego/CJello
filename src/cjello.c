@@ -9,7 +9,7 @@
 #define VERSION "CJello v0.1\n"
 #define DESCRIPTION "CJello is the reference implementation of the Jello virtual machine in C.\n"
 #define HELP "Usage: cjello [options] file...\nOptions:\n  -v, --version  Displays a version message\n\
-  -h, --help     Displays this help message\n  -d, --debug    Enables debug messages\n"
+  -h, --help     Displays this help message\n  -d, --debug    Enables debug messages\n\nUse `-` to take input from stdin.\n"
 
 int main(int argc, char const *argv[])
 {
@@ -18,6 +18,7 @@ int main(int argc, char const *argv[])
     bool help = false;
     bool input_file_present = false;
     bool debug_mode = false;
+    bool read_from_stdin = false;
     const char *input_file;
 
     if (argc < 2)
@@ -45,6 +46,10 @@ int main(int argc, char const *argv[])
             {
                 debug_mode = true;
             }
+            else if (!read_from_stdin && strncmp("-", argv[arg_count], 2) == 0)
+            {
+                read_from_stdin = true;
+            }
             else if (!input_file_present && strncmp("-", argv[arg_count], 1) != 0)
             {
                 input_file_present = true;
@@ -68,22 +73,37 @@ int main(int argc, char const *argv[])
     if (version || description || help)
         return 0;
 
-    FILE *fp;
-    if (NULL == (fp = fopen(input_file, "rb")))
-    {
-        fputs("Unable to open input file.", stderr);
-        return 1;
-    }
-
     Machine machine;
     machine_init(&machine);
 
-    size_t read_bytes = fread(machine.memory, 1, 65536, fp);
+    size_t read_bytes = 0;
 
-    fclose(fp);
+    if (input_file_present)
+    {
+        FILE *fp;
+        if (NULL == (fp = fopen(input_file, "rb")))
+        {
+            fputs("Unable to open input file.", stderr);
+            return 1;
+        }
+
+        read_bytes = fread(machine.memory, 1, 65536, fp);
+
+        fclose(fp);
+    }
+    else if (read_from_stdin)
+    {
+        read_bytes = fread(machine.memory, 1, 65536, stdin);
+    }
 
     if (debug_mode)
         printf("Loaded %zu bytes from file.\n", read_bytes);
+
+    if (read_bytes == 0)
+    {
+        fputs("No input.\n", stderr);
+        return 2;
+    }
 
     while (!machine.flags[15])
     {
