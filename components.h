@@ -22,4 +22,6 @@ uint16_t stack_pop(uint16_t stack[], size_t *stack_pointer);
 
 bool stack_push(uint16_t stack[], size_t *stack_pointer, size_t stack_size, uint16_t to_push);
 
+void machine_init(Machine *machine);
+
 #endif

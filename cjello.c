@@ -3,23 +3,13 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
-#include <sys/stat.h>
 #include "components.h"
 #include "instructions.h"
 
 #define VERSION "CJello v0.1\n"
 #define DESCRIPTION "CJello is the reference implementation of the Jello virtual machine in C.\n"
-#define HELP "HELP, I need sombody. HELP, not just anybody. HELP, you know I need someone. HEEEELP!\n"
-
-
-void debuginate(){
-    printf("Running Debug Scripts...\n");
-
-
-
-    printf("Debug Scripts Run.\n");
-}
-
+#define HELP "Usage: cjello [options] file...\nOptions:\n  -v, --version  Displays a version message\n\
+  -h, --help     Displays this help message\n  -d, --debug    Enables debug messages\n"
 
 int main(int argc, char const *argv[])
 {
@@ -27,6 +17,7 @@ int main(int argc, char const *argv[])
     bool description = false;
     bool help = false;
     bool input_file_present = false;
+    bool debug_mode = false;
     const char *input_file;
 
     if (argc < 2)
@@ -50,6 +41,10 @@ int main(int argc, char const *argv[])
                 description = true;
                 help = true;
             }
+            else if (!debug_mode && (strncmp("-d", argv[arg_count], 3) == 0 || strncmp("--debug", argv[arg_count], 8) == 0))
+            {
+                debug_mode = true;
+            }
             else if (!input_file_present && strncmp("-", argv[arg_count], 1) != 0)
             {
                 input_file_present = true;
@@ -64,10 +59,6 @@ int main(int argc, char const *argv[])
         }
     }
 
-
-    debuginate();
-
-
     if (version)
         printf(VERSION);
     if (description)
@@ -77,7 +68,29 @@ int main(int argc, char const *argv[])
     if (version || description || help)
         return 0;
 
+    FILE *fp;
+    if (NULL == (fp = fopen(input_file, "rb")))
+    {
+        fputs("Unable to open input file.", stderr);
+        return 1;
+    }
 
+    Machine machine;
+    machine_init(&machine);
+
+    size_t read_bytes = fread(machine.memory, 1, 65536, fp);
+
+    fclose(fp);
+
+    if (debug_mode)
+        printf("Loaded %zu bytes from file.\n", read_bytes);
+
+    while (!machine.flags[15])
+    {
+        if (debug_mode)
+            printf("Call to 0x%x at 0x%x\n", machine.memory[machine.pc], machine.pc);
+        call_instruction(machine.memory[machine.pc], &machine);
+    }
 
     return 0;
 }

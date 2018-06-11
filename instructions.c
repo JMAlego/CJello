@@ -1,21 +1,22 @@
 #include "instructions.h"
 
-void inst_undef(Machine *machine)
+static void inst_undef(Machine *machine)
+{
+    fprintf(stderr, "Call to undefined instruction, with pc=%u and memory[pc]=%u.\n", machine->pc, machine->memory[machine->pc]);
+    machine->pc++;
+}
+
+static void inst_noop(Machine *machine)
 {
     machine->pc++;
 }
 
-void inst_noop(Machine *machine)
-{
-    machine->pc++;
-}
-
-void inst_halt(Machine *machine)
+static void inst_halt(Machine *machine)
 {
     machine->flags[15] = true;
 }
 
-void inst_lri(Machine *machine)
+static void inst_lri(Machine *machine)
 {
     machine->pc++;
     uint8_t part1 = machine->memory[machine->pc];
@@ -25,68 +26,68 @@ void inst_lri(Machine *machine)
     machine->pc++;
 }
 
-void inst_lr0(Machine *machine)
+static void inst_lr0(Machine *machine)
 {
     machine->acc = machine->registers[0];
     machine->pc++;
 }
 
-void inst_lr1(Machine *machine)
+static void inst_lr1(Machine *machine)
 {
     machine->acc = machine->registers[1];
     machine->pc++;
 }
 
-void inst_lr2(Machine *machine)
+static void inst_lr2(Machine *machine)
 {
     machine->acc = machine->registers[2];
     machine->pc++;
 }
 
-void inst_lr3(Machine *machine)
+static void inst_lr3(Machine *machine)
 {
     machine->acc = machine->registers[3];
     machine->pc++;
 }
 
-void inst_sr0(Machine *machine)
+static void inst_sr0(Machine *machine)
 {
     machine->registers[0] = machine->acc;
     machine->pc++;
 }
 
-void inst_sr1(Machine *machine)
+static void inst_sr1(Machine *machine)
 {
     machine->registers[1] = machine->acc;
     machine->pc++;
 }
 
-void inst_sr2(Machine *machine)
+static void inst_sr2(Machine *machine)
 {
     machine->registers[2] = machine->acc;
     machine->pc++;
 }
 
-void inst_sr3(Machine *machine)
+static void inst_sr3(Machine *machine)
 {
     machine->registers[3] = machine->acc;
     machine->pc++;
 }
 
-void inst_zero(Machine *machine)
+static void inst_zero(Machine *machine)
 {
     machine->acc = 0;
     machine->pc++;
 }
 
-void inst_lrs(Machine *machine)
+static void inst_lrs(Machine *machine)
 {
     machine->pc++;
     machine->acc = machine->memory[machine->pc];
     machine->pc++;
 }
 
-void inst_add(Machine *machine)
+static void inst_add(Machine *machine)
 {
     uint16_t input1 = stack_pop(machine->stack, &machine->stack_pointer);
     uint16_t input2 = stack_pop(machine->stack, &machine->stack_pointer);
@@ -96,7 +97,7 @@ void inst_add(Machine *machine)
     machine->pc++;
 }
 
-void inst_addc(Machine *machine)
+static void inst_addc(Machine *machine)
 {
     uint16_t input1 = stack_pop(machine->stack, &machine->stack_pointer);
     uint16_t input2 = stack_pop(machine->stack, &machine->stack_pointer);
@@ -108,7 +109,7 @@ void inst_addc(Machine *machine)
     machine->pc++;
 }
 
-void inst_sub(Machine *machine)
+static void inst_sub(Machine *machine)
 {
     uint16_t input1 = stack_pop(machine->stack, &machine->stack_pointer);
     uint16_t input2 = stack_pop(machine->stack, &machine->stack_pointer);
@@ -124,7 +125,7 @@ void inst_sub(Machine *machine)
     machine->pc++;
 }
 
-void inst_subc(Machine *machine)
+static void inst_subc(Machine *machine)
 {
     uint16_t input1 = stack_pop(machine->stack, &machine->stack_pointer);
     uint16_t input2 = stack_pop(machine->stack, &machine->stack_pointer);
@@ -142,7 +143,7 @@ void inst_subc(Machine *machine)
     machine->pc++;
 }
 
-void inst_neg(Machine *machine)
+static void inst_neg(Machine *machine)
 {
     uint16_t input = stack_pop(machine->stack, &machine->stack_pointer);
     machine->acc = input ^ 65535;
@@ -150,7 +151,7 @@ void inst_neg(Machine *machine)
     machine->pc++;
 }
 
-void inst_mul(Machine *machine)
+static void inst_mul(Machine *machine)
 {
     uint16_t input1 = stack_pop(machine->stack, &machine->stack_pointer);
     uint16_t input2 = stack_pop(machine->stack, &machine->stack_pointer);
@@ -160,7 +161,7 @@ void inst_mul(Machine *machine)
     machine->pc++;
 }
 
-void inst_div(Machine *machine)
+static void inst_div(Machine *machine)
 {
     uint16_t input1 = stack_pop(machine->stack, &machine->stack_pointer);
     uint16_t input2 = stack_pop(machine->stack, &machine->stack_pointer);
@@ -168,7 +169,7 @@ void inst_div(Machine *machine)
     machine->pc++;
 }
 
-void inst_addi(Machine *machine)
+static void inst_addi(Machine *machine)
 {
     uint16_t input1 = stack_pop(machine->stack, &machine->stack_pointer);
     machine->pc++;
@@ -182,7 +183,7 @@ void inst_addi(Machine *machine)
     machine->pc++;
 }
 
-void inst_subi(Machine *machine)
+static void inst_subi(Machine *machine)
 {
     uint16_t input1 = stack_pop(machine->stack, &machine->stack_pointer);
     machine->pc++;
@@ -202,19 +203,19 @@ void inst_subi(Machine *machine)
     machine->pc++;
 }
 
-void inst_push(Machine *machine)
+static void inst_push(Machine *machine)
 {
     stack_push(machine->stack, &machine->stack_pointer, 16, machine->acc);
     machine->pc++;
 }
 
-void inst_pop(Machine *machine)
+static void inst_pop(Machine *machine)
 {
     machine->acc = stack_pop(machine->stack, &machine->stack_pointer);
     machine->pc++;
 }
 
-void inst_swap(Machine *machine)
+static void inst_swap(Machine *machine)
 {
     uint16_t first = stack_pop(machine->stack, &machine->stack_pointer);
     uint16_t second = stack_pop(machine->stack, &machine->stack_pointer);
@@ -223,14 +224,14 @@ void inst_swap(Machine *machine)
     machine->pc++;
 }
 
-void inst_peak(Machine *machine)
+static void inst_peak(Machine *machine)
 {
     machine->acc = stack_pop(machine->stack, &machine->stack_pointer);
     stack_push(machine->stack, &machine->stack_pointer, 16, machine->acc);
     machine->pc++;
 }
 
-void inst_spill(Machine *machine)
+static void inst_spill(Machine *machine)
 {
     uint16_t first = stack_pop(machine->stack, &machine->stack_pointer);
     stack_pop(machine->stack, &machine->stack_pointer);
@@ -238,13 +239,13 @@ void inst_spill(Machine *machine)
     machine->pc++;
 }
 
-void inst_drop(Machine *machine)
+static void inst_drop(Machine *machine)
 {
     stack_pop(machine->stack, &machine->stack_pointer);
     machine->pc++;
 }
 
-void inst_under(Machine *machine)
+static void inst_under(Machine *machine)
 {
     uint16_t first = stack_pop(machine->stack, &machine->stack_pointer);
     stack_push(machine->stack, &machine->stack_pointer, 16, machine->acc);
@@ -252,7 +253,7 @@ void inst_under(Machine *machine)
     machine->pc++;
 }
 
-void inst_rotcw(Machine *machine)
+static void inst_rotcw(Machine *machine)
 {
     uint16_t first = stack_pop(machine->stack, &machine->stack_pointer);
     uint16_t second = stack_pop(machine->stack, &machine->stack_pointer);
@@ -263,7 +264,7 @@ void inst_rotcw(Machine *machine)
     machine->pc++;
 }
 
-void inst_rotac(Machine *machine)
+static void inst_rotac(Machine *machine)
 {
     uint16_t first = stack_pop(machine->stack, &machine->stack_pointer);
     uint16_t second = stack_pop(machine->stack, &machine->stack_pointer);
@@ -274,7 +275,7 @@ void inst_rotac(Machine *machine)
     machine->pc++;
 }
 
-void inst_dup(Machine *machine)
+static void inst_dup(Machine *machine)
 {
     uint16_t first = stack_pop(machine->stack, &machine->stack_pointer);
     stack_push(machine->stack, &machine->stack_pointer, 16, first);
@@ -282,7 +283,7 @@ void inst_dup(Machine *machine)
     machine->pc++;
 }
 
-void inst_pushi(Machine *machine)
+static void inst_pushi(Machine *machine)
 {
     machine->pc++;
     uint8_t part1 = machine->memory[machine->pc];
@@ -292,7 +293,7 @@ void inst_pushi(Machine *machine)
     machine->pc++;
 }
 
-void inst_rotcw4(Machine *machine)
+static void inst_rotcw4(Machine *machine)
 {
     uint16_t first = stack_pop(machine->stack, &machine->stack_pointer);
     uint16_t second = stack_pop(machine->stack, &machine->stack_pointer);
@@ -305,7 +306,7 @@ void inst_rotcw4(Machine *machine)
     machine->pc++;
 }
 
-void inst_rotac4(Machine *machine)
+static void inst_rotac4(Machine *machine)
 {
     uint16_t first = stack_pop(machine->stack, &machine->stack_pointer);
     uint16_t second = stack_pop(machine->stack, &machine->stack_pointer);
@@ -318,7 +319,7 @@ void inst_rotac4(Machine *machine)
     machine->pc++;
 }
 
-void inst_rotcw5(Machine *machine)
+static void inst_rotcw5(Machine *machine)
 {
     uint16_t first = stack_pop(machine->stack, &machine->stack_pointer);
     uint16_t second = stack_pop(machine->stack, &machine->stack_pointer);
@@ -333,7 +334,7 @@ void inst_rotcw5(Machine *machine)
     machine->pc++;
 }
 
-void inst_rotac5(Machine *machine)
+static void inst_rotac5(Machine *machine)
 {
     uint16_t first = stack_pop(machine->stack, &machine->stack_pointer);
     uint16_t second = stack_pop(machine->stack, &machine->stack_pointer);
@@ -348,7 +349,7 @@ void inst_rotac5(Machine *machine)
     machine->pc++;
 }
 
-void inst_jmpi(Machine *machine)
+static void inst_jmpi(Machine *machine)
 {
     machine->pc++;
     uint8_t part1 = machine->memory[machine->pc];
@@ -357,7 +358,7 @@ void inst_jmpi(Machine *machine)
     machine->pc = part1 | ((uint16_t)part2 << 8);
 }
 
-void inst_jmpig(Machine *machine)
+static void inst_jmpig(Machine *machine)
 {
     machine->pc++;
     uint8_t part1 = machine->memory[machine->pc];
@@ -375,7 +376,7 @@ void inst_jmpig(Machine *machine)
         machine->pc++;
 }
 
-void inst_jmpil(Machine *machine)
+static void inst_jmpil(Machine *machine)
 {
     machine->pc++;
     uint8_t part1 = machine->memory[machine->pc];
@@ -393,7 +394,7 @@ void inst_jmpil(Machine *machine)
         machine->pc++;
 }
 
-void inst_jmpie(Machine *machine)
+static void inst_jmpie(Machine *machine)
 {
     machine->pc++;
     uint8_t part1 = machine->memory[machine->pc];
@@ -411,7 +412,7 @@ void inst_jmpie(Machine *machine)
         machine->pc++;
 }
 
-void inst_jmpit(Machine *machine)
+static void inst_jmpit(Machine *machine)
 {
     machine->pc++;
     uint8_t part1 = machine->memory[machine->pc];
@@ -424,13 +425,13 @@ void inst_jmpit(Machine *machine)
         machine->pc++;
 }
 
-void inst_jmp(Machine *machine)
+static void inst_jmp(Machine *machine)
 {
     uint16_t address = stack_pop(machine->stack, &machine->stack_pointer);
     machine->pc = address;
 }
 
-void inst_jmpgt(Machine *machine)
+static void inst_jmpgt(Machine *machine)
 {
     uint16_t address = stack_pop(machine->stack, &machine->stack_pointer);
     uint16_t first = stack_pop(machine->stack, &machine->stack_pointer);
@@ -444,7 +445,7 @@ void inst_jmpgt(Machine *machine)
         machine->pc++;
 }
 
-void inst_jmplt(Machine *machine)
+static void inst_jmplt(Machine *machine)
 {
     uint16_t address = stack_pop(machine->stack, &machine->stack_pointer);
     uint16_t first = stack_pop(machine->stack, &machine->stack_pointer);
@@ -458,7 +459,7 @@ void inst_jmplt(Machine *machine)
         machine->pc++;
 }
 
-void inst_jmpeq(Machine *machine)
+static void inst_jmpeq(Machine *machine)
 {
     uint16_t address = stack_pop(machine->stack, &machine->stack_pointer);
     uint16_t first = stack_pop(machine->stack, &machine->stack_pointer);
@@ -472,7 +473,7 @@ void inst_jmpeq(Machine *machine)
         machine->pc++;
 }
 
-void inst_jmpt(Machine *machine)
+static void inst_jmpt(Machine *machine)
 {
     uint16_t address = stack_pop(machine->stack, &machine->stack_pointer);
     if (machine->flags[2]) //test flag
@@ -481,31 +482,31 @@ void inst_jmpt(Machine *machine)
         machine->pc++;
 }
 
-void inst_pushp(Machine *machine)
+static void inst_pushp(Machine *machine)
 {
     stack_push(machine->pc_stack, &machine->pc_stack_pointer, 16, machine->pc);
     machine->pc++;
 }
 
-void inst_popp(Machine *machine)
+static void inst_popp(Machine *machine)
 {
     machine->pc = stack_pop(machine->pc_stack, &machine->pc_stack_pointer);
 }
 
-void inst_call(Machine *machine)
+static void inst_call(Machine *machine)
 {
     uint16_t address = stack_pop(machine->stack, &machine->stack_pointer);
     stack_push(machine->pc_stack, &machine->pc_stack_pointer, 16, machine->pc);
     machine->pc = address;
 }
 
-void inst_ret(Machine *machine)
+static void inst_ret(Machine *machine)
 {
     machine->pc = stack_pop(machine->pc_stack, &machine->pc_stack_pointer);
     machine->pc++;
 }
 
-void inst_calli(Machine *machine)
+static void inst_calli(Machine *machine)
 {
     machine->pc++;
     uint8_t part1 = machine->memory[machine->pc];
@@ -515,23 +516,21 @@ void inst_calli(Machine *machine)
     machine->pc = part1 | ((uint16_t)part2 << 8);
 }
 
-void inst_skip(Machine *machine)
+static void inst_skip(Machine *machine)
 {
     machine->pc += 2;
 }
 
-void inst_load(Machine *machine)
+static void inst_load(Machine *machine)
 {
     uint16_t address = stack_pop(machine->stack, &machine->stack_pointer);
-    machine->pc++;
     uint8_t part1 = machine->memory[address];
-    machine->pc++;
     uint8_t part2 = machine->memory[address + 1];
     stack_push(machine->stack, &machine->stack_pointer, 16, part1 | (part2 << 8));
     machine->pc++;
 }
 
-void inst_store(Machine *machine)
+static void inst_store(Machine *machine)
 {
     uint16_t address = stack_pop(machine->stack, &machine->stack_pointer);
     uint16_t data = stack_pop(machine->stack, &machine->stack_pointer);
@@ -543,22 +542,20 @@ void inst_store(Machine *machine)
     machine->pc++;
 }
 
-void inst_loadi(Machine *machine)
+static void inst_loadi(Machine *machine)
 {
     machine->pc++;
     uint8_t apart1 = machine->memory[machine->pc];
     machine->pc++;
     uint8_t apart2 = machine->memory[machine->pc];
     uint16_t address = apart1 | (apart2 << 8);
-    machine->pc++;
     uint8_t part1 = machine->memory[address];
-    machine->pc++;
     uint8_t part2 = machine->memory[address + 1];
     stack_push(machine->stack, &machine->stack_pointer, 16, part1 | (part2 << 8));
     machine->pc++;
 }
 
-void inst_storei(Machine *machine)
+static void inst_storei(Machine *machine)
 {
     machine->pc++;
     uint8_t apart1 = machine->memory[machine->pc];
@@ -574,28 +571,28 @@ void inst_storei(Machine *machine)
     machine->pc++;
 }
 
-void inst_or(Machine *machine)
+static void inst_or(Machine *machine)
 {
     machine->acc = stack_pop(machine->stack, &machine->stack_pointer) |
                    stack_pop(machine->stack, &machine->stack_pointer);
     machine->pc++;
 }
 
-void inst_and(Machine *machine)
+static void inst_and(Machine *machine)
 {
     machine->acc = stack_pop(machine->stack, &machine->stack_pointer) &
                    stack_pop(machine->stack, &machine->stack_pointer);
     machine->pc++;
 }
 
-void inst_xor(Machine *machine)
+static void inst_xor(Machine *machine)
 {
     machine->acc = stack_pop(machine->stack, &machine->stack_pointer) ^
                    stack_pop(machine->stack, &machine->stack_pointer);
     machine->pc++;
 }
 
-void inst_nand(Machine *machine)
+static void inst_nand(Machine *machine)
 {
     machine->acc = (stack_pop(machine->stack, &machine->stack_pointer) &
                     stack_pop(machine->stack, &machine->stack_pointer)) ^
@@ -603,7 +600,7 @@ void inst_nand(Machine *machine)
     machine->pc++;
 }
 
-void inst_nor(Machine *machine)
+static void inst_nor(Machine *machine)
 {
     machine->acc = (stack_pop(machine->stack, &machine->stack_pointer) |
                     stack_pop(machine->stack, &machine->stack_pointer)) ^
@@ -611,37 +608,37 @@ void inst_nor(Machine *machine)
     machine->pc++;
 }
 
-void inst_not(Machine *machine)
+static void inst_not(Machine *machine)
 {
     machine->acc = stack_pop(machine->stack, &machine->stack_pointer) ^ 0xffff;
     machine->pc++;
 }
 
-void inst_lsft0(Machine *machine)
+static void inst_lsft0(Machine *machine)
 {
     machine->acc = stack_pop(machine->stack, &machine->stack_pointer) << 1;
     machine->pc++;
 }
 
-void inst_rsft0(Machine *machine)
+static void inst_rsft0(Machine *machine)
 {
     machine->acc = stack_pop(machine->stack, &machine->stack_pointer) >> 1;
     machine->pc++;
 }
 
-void inst_lsft1(Machine *machine)
+static void inst_lsft1(Machine *machine)
 {
     machine->acc = (stack_pop(machine->stack, &machine->stack_pointer) << 1) | 0x1;
     machine->pc++;
 }
 
-void inst_rsft1(Machine *machine)
+static void inst_rsft1(Machine *machine)
 {
     machine->acc = (stack_pop(machine->stack, &machine->stack_pointer) >> 1) | (0x1 << 15);
     machine->pc++;
 }
 
-void inst_ori(Machine *machine)
+static void inst_ori(Machine *machine)
 {
     machine->pc++;
     uint8_t part1 = machine->memory[machine->pc];
@@ -652,7 +649,7 @@ void inst_ori(Machine *machine)
     machine->pc++;
 }
 
-void inst_andi(Machine *machine)
+static void inst_andi(Machine *machine)
 {
     machine->pc++;
     uint8_t part1 = machine->memory[machine->pc];
@@ -663,7 +660,7 @@ void inst_andi(Machine *machine)
     machine->pc++;
 }
 
-void inst_xori(Machine *machine)
+static void inst_xori(Machine *machine)
 {
     machine->pc++;
     uint8_t part1 = machine->memory[machine->pc];
@@ -674,7 +671,7 @@ void inst_xori(Machine *machine)
     machine->pc++;
 }
 
-void inst_nandi(Machine *machine)
+static void inst_nandi(Machine *machine)
 {
     machine->pc++;
     uint8_t part1 = machine->memory[machine->pc];
@@ -685,7 +682,7 @@ void inst_nandi(Machine *machine)
     machine->pc++;
 }
 
-void inst_nori(Machine *machine)
+static void inst_nori(Machine *machine)
 {
     machine->pc++;
     uint8_t part1 = machine->memory[machine->pc];
@@ -696,128 +693,128 @@ void inst_nori(Machine *machine)
     machine->pc++;
 }
 
-void inst_inc(Machine *machine)
+static void inst_inc(Machine *machine)
 {
     machine->acc = stack_pop(machine->stack, &machine->stack_pointer) + 1;
     machine->pc++;
 }
 
-void inst_inc2(Machine *machine)
+static void inst_inc2(Machine *machine)
 {
     machine->acc = stack_pop(machine->stack, &machine->stack_pointer) + 2;
     machine->pc++;
 }
 
-void inst_inc3(Machine *machine)
+static void inst_inc3(Machine *machine)
 {
     machine->acc = stack_pop(machine->stack, &machine->stack_pointer) + 3;
     machine->pc++;
 }
 
-void inst_inc4(Machine *machine)
+static void inst_inc4(Machine *machine)
 {
     machine->acc = stack_pop(machine->stack, &machine->stack_pointer) + 4;
     machine->pc++;
 }
 
-void inst_dec(Machine *machine)
+static void inst_dec(Machine *machine)
 {
     machine->acc = stack_pop(machine->stack, &machine->stack_pointer) - 1;
     machine->pc++;
 }
 
-void inst_dec2(Machine *machine)
+static void inst_dec2(Machine *machine)
 {
     machine->acc = stack_pop(machine->stack, &machine->stack_pointer) - 2;
     machine->pc++;
 }
 
-void inst_dec3(Machine *machine)
+static void inst_dec3(Machine *machine)
 {
     machine->acc = stack_pop(machine->stack, &machine->stack_pointer) - 3;
     machine->pc++;
 }
 
-void inst_dec4(Machine *machine)
+static void inst_dec4(Machine *machine)
 {
     machine->acc = stack_pop(machine->stack, &machine->stack_pointer) - 4;
     machine->pc++;
 }
 
-void inst_incp(Machine *machine)
+static void inst_incp(Machine *machine)
 {
     stack_push(machine->stack, &machine->stack_pointer, 16, stack_pop(machine->stack, &machine->stack_pointer) + 1);
     machine->pc++;
 }
 
-void inst_inc2p(Machine *machine)
+static void inst_inc2p(Machine *machine)
 {
     stack_push(machine->stack, &machine->stack_pointer, 16, stack_pop(machine->stack, &machine->stack_pointer) + 2);
     machine->pc++;
 }
 
-void inst_inc3p(Machine *machine)
+static void inst_inc3p(Machine *machine)
 {
     stack_push(machine->stack, &machine->stack_pointer, 16, stack_pop(machine->stack, &machine->stack_pointer) + 3);
     machine->pc++;
 }
 
-void inst_inc4p(Machine *machine)
+static void inst_inc4p(Machine *machine)
 {
     stack_push(machine->stack, &machine->stack_pointer, 16, stack_pop(machine->stack, &machine->stack_pointer) + 4);
     machine->pc++;
 }
 
-void inst_decp(Machine *machine)
+static void inst_decp(Machine *machine)
 {
     stack_push(machine->stack, &machine->stack_pointer, 16, stack_pop(machine->stack, &machine->stack_pointer) - 1);
     machine->pc++;
 }
 
-void inst_dec2p(Machine *machine)
+static void inst_dec2p(Machine *machine)
 {
     stack_push(machine->stack, &machine->stack_pointer, 16, stack_pop(machine->stack, &machine->stack_pointer) - 2);
     machine->pc++;
 }
 
-void inst_dec3p(Machine *machine)
+static void inst_dec3p(Machine *machine)
 {
     stack_push(machine->stack, &machine->stack_pointer, 16, stack_pop(machine->stack, &machine->stack_pointer) - 3);
     machine->pc++;
 }
 
-void inst_dec4p(Machine *machine)
+static void inst_dec4p(Machine *machine)
 {
     stack_push(machine->stack, &machine->stack_pointer, 16, stack_pop(machine->stack, &machine->stack_pointer) - 4);
     machine->pc++;
 }
 
-void inst_test(Machine *machine)
+static void inst_test(Machine *machine)
 {
     machine->flags[2] = machine->flags[0] | machine->flags[1];
     machine->pc++;
 }
 
-void inst_testc(Machine *machine)
+static void inst_testc(Machine *machine)
 {
     machine->flags[2] = machine->flags[0];
     machine->pc++;
 }
 
-void inst_testo(Machine *machine)
+static void inst_testo(Machine *machine)
 {
     machine->flags[2] = machine->flags[1];
     machine->pc++;
 }
 
-void inst_tsast(Machine *machine)
+static void inst_tsast(Machine *machine)
 {
     machine->flags[2] = stack_pop(machine->stack, &machine->stack_pointer) != 0;
     stack_push(machine->stack, &machine->stack_pointer, 16, 1);
     machine->pc++;
 }
 
-void inst_tsainc(Machine *machine)
+static void inst_tsainc(Machine *machine)
 {
     uint16_t data = stack_pop(machine->stack, &machine->stack_pointer);
     machine->flags[2] = data != 0;
@@ -825,7 +822,7 @@ void inst_tsainc(Machine *machine)
     machine->pc++;
 }
 
-void inst_tsadec(Machine *machine)
+static void inst_tsadec(Machine *machine)
 {
     uint16_t data = stack_pop(machine->stack, &machine->stack_pointer);
     machine->flags[2] = data != 0;
@@ -833,47 +830,47 @@ void inst_tsadec(Machine *machine)
     machine->pc++;
 }
 
-void inst_tsastr(Machine *machine)
+static void inst_tsastr(Machine *machine)
 {
     machine->flags[2] = machine->registers[0] != 0;
     machine->registers[0] = 1;
     machine->pc++;
 }
 
-void inst_tsainr(Machine *machine)
+static void inst_tsainr(Machine *machine)
 {
     machine->flags[2] = machine->registers[0] != 0;
     machine->registers[0]++;
     machine->pc++;
 }
 
-void inst_tsader(Machine *machine)
+static void inst_tsader(Machine *machine)
 {
     machine->flags[2] = machine->registers[0] != 0;
     machine->registers[0]--;
     machine->pc++;
 }
 
-void inst_lsftb(Machine *machine)
+static void inst_lsftb(Machine *machine)
 {
     machine->acc = stack_pop(machine->stack, &machine->stack_pointer) << 8;
     machine->pc++;
 }
 
-void inst_rsftb(Machine *machine)
+static void inst_rsftb(Machine *machine)
 {
     machine->acc = stack_pop(machine->stack, &machine->stack_pointer) >> 8;
     machine->pc++;
 }
 
-void inst_prn(Machine *machine)
+static void inst_prn(Machine *machine)
 {
     uint8_t popped = stack_pop(machine->stack, &machine->stack_pointer) & 0x00ff;
     printf("%c", popped);
     machine->pc++;
 }
 
-void inst_prni(Machine *machine)
+static void inst_prni(Machine *machine)
 {
     machine->pc++;
     uint8_t data = machine->memory[machine->pc];
@@ -881,7 +878,7 @@ void inst_prni(Machine *machine)
     machine->pc++;
 }
 
-void inst_prn2(Machine *machine)
+static void inst_prn2(Machine *machine)
 {
     uint16_t popped = stack_pop(machine->stack, &machine->stack_pointer);
     uint8_t part1 = popped & 0x00ff;
@@ -890,7 +887,7 @@ void inst_prn2(Machine *machine)
     machine->pc++;
 }
 
-void inst_prn2i(Machine *machine)
+static void inst_prn2i(Machine *machine)
 {
     machine->pc++;
     uint8_t part1 = machine->memory[machine->pc];
@@ -900,21 +897,21 @@ void inst_prn2i(Machine *machine)
     machine->pc++;
 }
 
-void inst_dump8(Machine *machine)
+static void inst_dump8(Machine *machine)
 {
     uint8_t popped = stack_pop(machine->stack, &machine->stack_pointer) & 0x00ff;
     printf("0x%02x", popped);
     machine->pc++;
 }
 
-void inst_dump16(Machine *machine)
+static void inst_dump16(Machine *machine)
 {
     uint16_t popped = stack_pop(machine->stack, &machine->stack_pointer);
     printf("0x%04x", popped);
     machine->pc++;
 }
 
-void (*instructions[256])(Machine *) = {
+void (*const instructions[256])(Machine *) = {
     inst_noop, //0x00
     inst_undef,
     inst_undef,
@@ -989,10 +986,10 @@ void (*instructions[256])(Machine *) = {
     inst_jmplt,
     inst_jmpeq,
     inst_jmpt,
+    inst_pushp,
     inst_popp,
     inst_call,
     inst_ret,
-    inst_call,
     inst_calli,
     inst_skip,
     inst_load, //0x50
@@ -1171,3 +1168,8 @@ void (*instructions[256])(Machine *) = {
     inst_undef,
     inst_undef,
     inst_undef};
+
+void call_instruction(uint8_t instruction, Machine *machine)
+{
+    instructions[instruction](machine);
+}

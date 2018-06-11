@@ -8,6 +8,8 @@
 #include <math.h>
 #include "components.h"
 
-void (*instructions[256])(Machine *);
+void (*const instructions[256])(Machine *);
+
+void call_instruction(uint8_t instruction, Machine *machine);
 
 #endif
