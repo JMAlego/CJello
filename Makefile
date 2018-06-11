@@ -1,29 +1,27 @@
 CC = clang
 PREFIX ?= /usr/local
 CFLAGS ?= -std=c11 -Wall -Wextra -pedantic -I.
-DEPS = instructions.h components.h
-OBJ = instructions.o components.o
+DEPS = src/instructions.h src/components.h
+OBJ = obj/instructions.o obj/components.o
 
 TARGET := cjello
 
 .PHONY: all run install clean
 
-all: $(TARGET) $(OBJ)
+all: bin/$(TARGET) $(OBJ)
 
-%.o: %.c $(DEPS)
+obj/%.o: src/%.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-$(TARGET): $(TARGET).c $(OBJ)
-	$(CC) $(CFLAGS) -o $(TARGET) $(TARGET).c $(OBJ)
-	mv *.o obj/
-	mv $(TARGET) bin/$(TARGET)
+bin/$(TARGET): src/$(TARGET).c $(OBJ)
+	$(CC) $(CFLAGS) -o bin/$(TARGET) src/$(TARGET).c $(OBJ)
 
 run: $(TARGET)
-	./$(TARGET) $(ARGS)
+	./bin/$(TARGET) $(ARGS)
 
 install: $(TARGET)
 	mkdir -p $(PREFIX)/bin
-	cp $^ $(PREFIX)/bin
+	cp bin/$^ $(PREFIX)/bin
 
 clean:
 	$(RM) $(TARGET) $(OBJ)
