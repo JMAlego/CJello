@@ -5,6 +5,18 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#define LOWER_BYTE 0x00ff
+#define UPPER_BYTE 0xff00
+#define MAX_16_BIT_NUM 65535
+#define MAX_16_BIT_INDEX 65536
+#define MEMORY_SIZE 65536
+#define STACK_SIZE 16
+#define PC_STACK_SIZE 16
+#define FLAG_HALT 15
+#define FLAG_CARRY 0
+#define FLAG_OVERFLOW 1
+#define FLAG_TEST 2
+
 typedef struct Machine
 {
     uint8_t memory[65536];

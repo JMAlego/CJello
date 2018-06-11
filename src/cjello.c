@@ -87,13 +87,13 @@ int main(int argc, char const *argv[])
             return 1;
         }
 
-        read_bytes = fread(machine.memory, 1, 65536, fp);
+        read_bytes = fread(machine.memory, 1, MEMORY_SIZE, fp);
 
         fclose(fp);
     }
     else if (read_from_stdin)
     {
-        read_bytes = fread(machine.memory, 1, 65536, stdin);
+        read_bytes = fread(machine.memory, 1, MEMORY_SIZE, stdin);
     }
 
     if (debug_mode)
@@ -105,7 +105,7 @@ int main(int argc, char const *argv[])
         return 2;
     }
 
-    while (!machine.flags[15])
+    while (!machine.flags[FLAG_HALT])
     {
         if (debug_mode)
             printf("Call to 0x%x at 0x%x\n", machine.memory[machine.pc], machine.pc);
