@@ -1,6 +1,6 @@
 # CJello
 
-CJello is a C implementation of the virtual architecture used in my previous Rusty Jello project. To create the memory images used in CJello you can use `rusty_jello FILE -a` to export a memory image from Rust Jello.
+CJello is a C implementation of the virtual architecture used in my previous Rusty Jello project. To create the memory images used in CJello you can use `rusty_jello FILE -a` to export a memory image from Rusty Jello.
 
 ## Installing
 
@@ -16,6 +16,8 @@ make install
 ```
 
 The make file uses `clang` by default but it should build fine with `gcc`.
+
+While CJello hasn't been tested on Windows, it should work with limited changes as no non-standard libraries are used.
 
 ## Running
 
