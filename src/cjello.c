@@ -83,7 +83,7 @@ int main(int argc, char const *argv[])
         FILE *fp;
         if (NULL == (fp = fopen(input_file, "rb")))
         {
-            fputs("Unable to open input file.", stderr);
+            fputs("Unable to open input file.\n", stderr);
             return 1;
         }
 
